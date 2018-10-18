@@ -1,0 +1,4 @@
+xst -ise "/afs/athena.mit.edu/user/i/s/isab8liu/6.111/lab5/lab5.ise" -intstyle ise -ifn "/afs/athena.mit.edu/user/i/s/isab8liu/6.111/lab5/debounce.xst" -ofn "/afs/athena.mit.edu/user/i/s/isab8liu/6.111/lab5/debounce.syr"
+ngdbuild -ise "/afs/athena.mit.edu/user/i/s/isab8liu/6.111/lab5/lab5.ise" -intstyle ise -dd _ngo  -nt timestamp -i -p xc2v6000-bf957-4 "debounce.ngc" debounce.ngd
+ngdbuild -ise "/afs/athena.mit.edu/user/i/s/isab8liu/6.111/lab5/lab5.ise" -intstyle ise -dd _ngo  -aul -nt timestamp -i -p xc2v6000-bf957-4 "debounce.ngc" debounce.ngd
+ngdbuild -ise "/afs/athena.mit.edu/user/i/s/isab8liu/6.111/lab5/lab5.ise" -intstyle ise -dd _ngo  -aul -nt timestamp -i -p xc2v6000-bf957-4 "debounce.ngc" debounce.ngd
