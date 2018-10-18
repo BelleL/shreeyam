@@ -6,32 +6,32 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-module debounce (
-  input wire reset, clock, noisy,
-  output reg clean
-);
-  reg [18:0] count;
-  reg new;
-
-  always @(posedge clock)
-    if (reset) begin
-      count <= 0;
-      new <= noisy;
-      clean <= noisy;
-    end
-    else if (noisy != new) begin
-      // noisy input changed, restart the .01 sec clock
-      new <= noisy;
-      count <= 0;
-    end
-    else if (count == 270000)
-      // noisy input stable for .01 secs, pass it along!
-      clean <= new;
-    else
-      // waiting for .01 sec to pass
-      count <= count+1;
-
-endmodule
+//module debounce (
+//  input wire reset, clock, noisy,
+//  output reg clean
+//);
+//  reg [18:0] count;
+//  reg new;
+//
+//  always @(posedge clock)
+//    if (reset) begin
+//      count <= 0;
+//      new <= noisy;
+//      clean <= noisy;
+//    end
+//    else if (noisy != new) begin
+//      // noisy input changed, restart the .01 sec clock
+//      new <= noisy;
+//      count <= 0;
+//    end
+//    else if (count == 270000)
+//      // noisy input stable for .01 secs, pass it along!
+//      clean <= new;
+//    else
+//      // waiting for .01 sec to pass
+//      count <= count+1;
+//
+//endmodule
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -696,9 +696,6 @@ module lab5   (beep, audio_reset_b, ac97_sdata_out, ac97_sdata_in, ac97_synch,
 
    assign analyzer3_clock = ready;
    assign analyzer3_data = {from_ac97_data, to_ac97_data};
-	
-	
-	
 endmodule
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -718,65 +715,14 @@ module recorder(
 );  
    // test: playback 750hz tone, or loopback using incoming data
    wire [19:0] tone;
-   //tone750hz xxx(.clock(clock),.ready(ready),.pcm_data(tone));
-	
-	parameter RECORD = 0;
-	parameter PLAYBACK = 1;
-	parameter LOGSIZE = 16;
-	parameter WIDTH = 8;
-	reg [LOGSIZE:0]addr = 0; // address for memory, reg can be connected to the input of a module instantiation
-	reg we; // we = write
-	reg [WIDTH-1 :0]mem_in;
-	reg [WIDTH-1 :0]mem_out;
-	reg [3:0] counter_r = 0;
-	reg [3:0] counter_p = 0;
-	reg last_state;
-	//initialize memory
-	mybram #(.LOGSIZE(LOGSIZE),.WIDTH(WIDTH))
-       mem(.addr(addr),.clk(clock),.we(we),.din(mem_in),.dout(mem_out));
+   tone750hz xxx(.clock(clock),.ready(ready),.pcm_data(tone));
 
-	//reset??
-
-	always @(posedge clock) begin	
-		if (ready) begin
-			//reset memory address if switch to different mode
-			if (playback != last_state) addr <= 0;
-			
-			case (playback)
-				RECORD :begin				
-					counter_r <= counter_r +1;
-					if ((counter_r == 8)&& (~&addr) )begin // or should counter be ==7 ? check simulation
-						addr <= addr + 1;
-						counter_r <= 0;
-						mem_in <= from_ac97_data;
-					end 
-					if (&addr) addr <= 0;
-					last_state <= RECORD;
-				end
-				
-				PLAYBACK :begin
-					if ((counter_p == 8)&& (~&addr))begin // or should counter be ==7 ? check simulation						
-						addr <= addr + 1;
-						counter_p <= 0;
-						to_ac97_data <= mem_out;						
-					end 
-					if (&addr) addr <= 0;
-					last_state <= PLAYBACK;
-					
-				end
-			endcase 
-
-		end
-		
-	end
-	/*	 
    always @ (posedge clock) begin
       if (ready) begin
 	 // get here when we've just received new data from the AC97
 	 to_ac97_data <= playback ? tone[19:12] : from_ac97_data;
       end
    end
-	*/
 endmodule
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -819,13 +765,29 @@ module fir31(
   input wire signed [7:0] x,
   output reg signed [17:0] y
 );
+  reg [18:0] accum;
+  reg [7:0] sample [31:0];  // 32 element array each 8 bits wide, buffer of samples
+  reg [4:0] i;
+  wire [9:0] coeff;
+	//instance of coeffs31
+	coeffs31 coeff_31 (.index(i), .coeff (coeff))
+	
+	always @(posedge clock) begin
+		if (index < 30) begin
+			accum <= accum + coeff*sample[i];
+			i <= i + 1;
+		end else if (index == 30) begin
+			i <= 0;
+		end		
+		
+		
+	end
+  /*
   // for now just pass data through
   always @(posedge clock) begin
-    //if (ready) y <= {x,10'd0};
-	 
-	 y = sum(coeff[i] * sample[i])
-
+    if (ready) y <= {x,10'd0};
   end
+  */
 endmodule
 
 ///////////////////////////////////////////////////////////////////////////////
